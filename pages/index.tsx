@@ -1,118 +1,153 @@
-import Image from 'next/image'
-import { Inter } from 'next/font/google'
+import Head from "next/head";
+import { useEffect, useState } from "react";
 
-const inter = Inter({ subsets: ['latin'] })
+import { Navbar } from "@/components/Navbar/Navbar";
+import { Inputbar } from "@/components/Inputbar/Inputbar";
+import { Outputbar } from "@/components/Outputbar/Outputbar";
 
-export default function Home() {
+import Web3 from "web3";
+
+const IndexPage = () => {
+  const [web3, setWeb3] = useState<Web3 | null>(null);
+  const [account, setAccount] = useState<string | null>(null);
+  const [network, setNetwork] = useState<string | null>(null);
+  const [priceList, setPriceList] = useState<string[]>([]);
+  const [predList, setPredList] = useState<string[]>([]);
+
+  //함수 1 : 메타마스크 연결
+  const connectMetaMask = async () => {
+    let currentWeb3 = web3;
+
+    //현재 web3 인스턴스 없으면 새로 생성
+    if (
+      !currentWeb3 &&
+      typeof window !== "undefined" &&
+      typeof window.ethereum !== "undefined"
+    ) {
+      currentWeb3 = new Web3(window.ethereum);
+      setWeb3(currentWeb3);
+    }
+
+    if (currentWeb3) {
+      try {
+        const accounts = await currentWeb3.eth.requestAccounts();
+        setAccount(accounts[0]);
+      } catch (error) {
+        console.error("메타마스크 연결에 실패 : ", error);
+      }
+    }
+  };
+
+  //함수 2 : 메타마스크 연결 해제
+  const disconnectMetaMask = () => {
+    setWeb3(null);
+    setAccount(null);
+    setNetwork(null);
+  };
+
+  //함수 3 : 가격 데이터 10개를 예측모델에 전달하고 응답 받기
+  const handlePredBtnClick = async () => {
+    console.log("예측 모델에게 가격 정보들을 보냅니다.");
+
+    //Django 서버의 PredictView URL
+    let url = "http://52.79.47.70:8000/predict/?";
+
+    //priceList의 10개의 값을 쿼리 파라미터로 추가
+    if (priceList) {
+      priceList.forEach((price, index) => {
+        url += `&input_data_${index}=${price}`;
+      });
+    }
+
+    //fetch로 GET요청
+    const response = await fetch(url);
+    //const responseText = await response.text();
+    //console.log(responseText);
+    const data = await response.json();
+
+    const tempPredList = data.prediction;
+    setPredList(tempPredList);
+    console.log("예측값들을 가져왔습니다.");
+  };
+
+  //함수 4 : 예측값들을 스마트 컨트랙트로 전달
+  const handleSendBtnClick = async () => {
+    console.log("스마트 컨트랙트로 전송합니다. (미구현)");
+  };
+
+  useEffect(() => {
+    if (
+      typeof window !== "undefined" &&
+      typeof window.ethereum !== "undefined"
+    ) {
+      const web3Instance = new Web3(window.ethereum);
+      setWeb3(web3Instance);
+
+      web3Instance.eth.getAccounts().then((accounts) => {
+        if (accounts.length > 0) {
+          setAccount(accounts[0]);
+        }
+      });
+
+      //이벤트 리스너 : 계정이 변경 감지
+      window.ethereum.on("accountsChanged", (accounts: any) => {
+        setAccount(accounts[0]);
+      });
+
+      //이벤트 리스너 : 연결 해제 감지
+      window.ethereum.on("disconnect", () => {
+        setAccount(null);
+      });
+    } else {
+      console.error("이더리움 네트워크 연결이 되지 않았습니다.");
+    }
+
+    //useEffect가 종료될 때 이벤트 리스너 제거
+    return () => {
+      if (window.ethereum) {
+        window.ethereum.removeAllListeners("accountsChanged");
+        window.ethereum.removeAllListeners("disconnect");
+      }
+    };
+  }, []);
+
   return (
-    <main
-      className={`flex min-h-screen flex-col items-center justify-between p-24 ${inter.className}`}
-    >
-      <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">pages/index.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
-
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700/10 after:dark:from-sky-900 after:dark:via-[#0141ff]/40 before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
+    <div className="w-full h-full">
+      <Head>
+        <title>ETH/USD Price</title>
+        <meta name="description" content="How much is the ETH?" />
+        <meta
+          name="viewport"
+          content="height=device-height ,width=device-width, initial-scale=1, user-scalable=no"
         />
-      </div>
+      </Head>
+      <main className="flex justify-center h-screen bg-gray-900">
+        <div className="w-2/3 bg-opacity-20 backdrop-blur-md p-4">
+          <Navbar
+            web3={web3}
+            account={account}
+            network={network}
+            connectMetaMask={connectMetaMask}
+            disconnectMetaMask={disconnectMetaMask}
+            setNetwork={setNetwork}
+          />
+          <div className="flex flex-row justify-center items-center space-x-20">
+            <Inputbar
+              handlePredBtnClick={handlePredBtnClick}
+              web3={web3}
+              priceList={priceList}
+              setPriceList={setPriceList}
+            />
+            <Outputbar
+              handleSendBtnClick={handleSendBtnClick}
+              web3={web3}
+              predList={predList}
+            />
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+};
 
-      <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Discover and deploy boilerplate example Next.js&nbsp;projects.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  )
-}
+export default IndexPage;

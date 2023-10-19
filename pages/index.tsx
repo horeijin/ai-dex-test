@@ -62,7 +62,8 @@ const IndexPage = () => {
 
     //Django 서버의 PredictView URL
     //let url = "http://52.79.47.70:8000/predict/?"; //구 서버
-    let url = "http://3.39.192.169:8000/predict/?"; //신 서버
+    //let url = "http://3.39.192.169:8000/predict/?"; //신 서버
+    let url = "https://aim.worldland.foundation/?"; //신 서버 도메인 입힘
     //let url = "http://localhost:8000/predict/?";
     console.log("예측모델 서버 주소 : ", url);
     console.log(priceList);

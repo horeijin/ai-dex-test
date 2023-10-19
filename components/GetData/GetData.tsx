@@ -6,6 +6,7 @@ interface Props {
   answer: string;
   timestamp: string;
   handleGetDataClick: () => void;
+  handleGetDataClick2: () => void;
 }
 
 export const GetData: FC<Props> = ({
@@ -13,27 +14,40 @@ export const GetData: FC<Props> = ({
   answer,
   timestamp,
   handleGetDataClick,
+  handleGetDataClick2,
 }) => {
   return (
     <div>
       <button
         onClick={handleGetDataClick}
+        className="mt-4 mr-2 bg-blue-400 p-2 rounded hover:bg-blue-600"
+      >
+        가격 조회
+        <br />
+        (roundId)
+      </button>
+      <button
+        onClick={handleGetDataClick2}
         className="mt-4 bg-blue-400 p-2 rounded hover:bg-blue-600"
       >
-        가격 가져오기
+        가격 조회
+        <br />
+        (1분간격)
       </button>
-      {/* <div>
-        <p className="pt-5 pb-5 text-white">
-          latestRound :
-          {latestRound !== null ? latestRound : "데이터가 없습니다."}
+      <div>
+        <p className="pt-10 text-white">
+          latestRound :<br />
+          {latestRound !== null ? latestRound : ""}
         </p>
-        <p className="pt-5 pb-5 text-white">
-          price : {answer !== null ? answer : "데이터가 없습니다."}
+        <p className="pt-2 text-white">
+          price : <br />
+          {answer !== null ? answer : ""}
         </p>
-        <p className="pt-5 pb-5 text-white">
-          timestamp : {timestamp !== null ? timestamp : "데이터가 없습니다."}
+        <p className="pt-2 text-white">
+          timestamp : <br />
+          {timestamp !== null ? timestamp : ""}
         </p>
-      </div> */}
+      </div>
     </div>
   );
 };

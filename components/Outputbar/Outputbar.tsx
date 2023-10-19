@@ -4,12 +4,14 @@ import Web3 from "web3";
 interface Props {
   web3: Web3 | null;
   predList: string[];
+  displayMode: "CREATION" | "CURRENT" | undefined;
   handleSendBtnClick: () => void;
 }
 
 export const Outputbar: FC<Props> = ({
   web3,
   predList,
+  displayMode,
   handleSendBtnClick,
 }) => {
   return (
@@ -21,7 +23,17 @@ export const Outputbar: FC<Props> = ({
               key={i}
               className="w-full p-2 rounded bg-white border border-gray-300 text-center text-black"
             >
-              {pred}
+              {displayMode == "CREATION" ? (
+                <p>
+                  {i + 1}분 후 가격 {pred}
+                </p>
+              ) : displayMode == "CURRENT" ? (
+                <p>
+                  {i + 1}분 후 가격 {pred}
+                </p>
+              ) : (
+                ""
+              )}
             </div>
           ))
         : Array.from({ length: 10 }).map((_, i) => (
@@ -32,14 +44,14 @@ export const Outputbar: FC<Props> = ({
               예측값 #${i + 1}
             </div>
           ))}
-      <div className="flex justify-center">
+      {/* <div className="flex justify-center">
         <button
           onClick={handleSendBtnClick}
           className="mt-4 bg-blue-400 p-2 rounded hover:bg-blue-600"
         >
           컨트랙트로 전송
         </button>
-      </div>
+      </div> */}
     </div>
   );
 };

@@ -1,5 +1,6 @@
-export const contractAddress = "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419"; //mainnet
-//export const contractAddress = "0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e"; //goerli
+export const contractAddress = "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419"; //mainnet 이더리움
+//export const contractAddress = "0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e"; //goerli 이더리움
+//export const contractAddress = "0xA39434A63A52E749F02807ae27335515BA4b07F7"; // goerli 비트코인 (BTC / USD)
 
 export const contractABI = [
   {
